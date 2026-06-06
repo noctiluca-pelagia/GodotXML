@@ -176,6 +176,8 @@ static func _make_node_element(parser: XMLParser) -> XMLNode:
     node.content = ""
     node.standalone = parser.is_empty()  # see .is_empty() docs
     node.children = []
+    node.parser_line = parser.get_current_line()
+    node.parser_byte = parser.get_node_offset()
 
     return node
 
@@ -188,6 +190,8 @@ static func _make_node_element_end(parser: XMLParser) -> XMLNode:
     node.content = ""
     node.standalone = false  # standalone nodes are always NODE_ELEMENT
     node.children = []
+    node.parser_line = parser.get_current_line()
+    node.parser_byte = parser.get_node_offset()
 
     return node
 

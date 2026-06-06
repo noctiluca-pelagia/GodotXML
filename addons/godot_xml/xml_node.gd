@@ -20,10 +20,17 @@ var standalone: bool = false
 ## XML node's children.
 var children: Array[XMLNode] = []
 
+## If this XMLNode was parsed from a file, this value will be the line offset of the node.
+## Otherwise, this will read -1.
+var parser_line : int = -1
+
+## If this XML node was parsed from a file, this value will be the byte offset of the node.
+## otherwise, this will read -1.
+var parser_byte : int = -1
+
 var _node_props: Array
 var _node_props_initialized: bool = false
 const KNOWN_PROPERTIES: Array[String] = ["name", "attributes", "content", "cdata", "standalone", "children"]
-
 
 ## Returns an [Array] of children [XMLNode]s whose tag matches [param name].
 func get_children_by_name(name: String) -> Array[XMLNode]:
@@ -64,6 +71,8 @@ func to_dict() -> Dictionary:
         func(child: XMLNode) -> Dictionary:
             return child.to_dict()
     )
+    output["parser_line"] = self.parser_line
+    output["parser_byte"] = self.parser_byte
 
     return output
 
@@ -113,13 +122,15 @@ func dump_str(
 
 
 func _to_string():
-    return "<XMLNode name=%s attributes=%s content=%s cdata=%s standalone=%s children=%s>" % [
+    return "<XMLNode name=%s attributes=%s content=%s cdata=%s standalone=%s children=%s parser_line=%s parser_byte=%s>" % [
         self.name,
         "{...}" if len(self.attributes) > 0 else "{}",
         '"..."' if len(self.content) > 0 else '""',
         "[...]" if len(self.cdata) > 0 else "[]",
         self.standalone,
-        "[...]" if len(self.children) > 0 else "[]"
+        "[...]" if len(self.children) > 0 else "[]",
+        self.parser_line,
+        self.parser_byte
     ]
 
 
