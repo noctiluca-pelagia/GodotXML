@@ -9,9 +9,13 @@ class_name XML extends RefCounted
 ## File content [b]must[/b] be a syntactically valid XML document.
 static func parse_file(path: String) -> XMLDocument:
     var file = FileAccess.open(path, FileAccess.READ)
+    var err = FileAccess.get_open_error()
+    if err != OK:
+        var doc = XMLDocument.new()
+        doc.err = err
+        return doc
     var xml: PackedByteArray = file.get_as_text().to_utf8_buffer()
-    file = null
-
+    file.close()
     return XML._parse(xml)
 
 
@@ -106,8 +110,9 @@ static func _parse(xml: PackedByteArray) -> XMLDocument:
                 # if we got a closing node, but it's name is not the same as opening one, it's an error
                 if node.name != last.name:
                     push_error(
-                        "Invalid closing tag: started with %s but ended with %s. Ignoring (output may be incorrect)." % [last.name, node.name]
+                        "Invalid closing tag: started with %s but ended with %s." % [last.name, node.name]
                     )
+                    doc.err = ERR_PARSE_ERROR
                     # instead of break'ing here we just continue, since often invalid name is just a typo
                     continue
 
@@ -134,6 +139,7 @@ static func _parse(xml: PackedByteArray) -> XMLDocument:
             names.append(node.name)
 
         push_error("The following nodes were not closed: %s" % ", ".join(names))
+        doc.err = ERR_PARSE_ERROR
 
     return doc
 
